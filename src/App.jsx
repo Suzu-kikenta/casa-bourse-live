@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    GLOBAL CSS  (injected once into <head>)
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
@@ -40,14 +40,14 @@ const GLOBAL_CSS = `
   button { cursor: pointer; font-family: inherit; border: none; outline: none; }
   a { color: var(--gold); text-decoration: none; }
 
-  /* ── SCROLLBAR ── */
+  /* -- SCROLLBAR -- */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 4px; }
   .hide-scroll { scrollbar-width: none; }
   .hide-scroll::-webkit-scrollbar { display: none; }
 
-  /* ── KEYFRAMES ── */
+  /* -- KEYFRAMES -- */
   @keyframes ticker-scroll {
     0%   { transform: translateX(0); }
     100% { transform: translateX(-50%); }
@@ -82,16 +82,16 @@ const GLOBAL_CSS = `
   .fade-up:nth-child(5){animation-delay:.19s}
   .fade-up:nth-child(6){animation-delay:.23s}
 
-  /* ── TABLE ROWS ── */
+  /* -- TABLE ROWS -- */
   .row-hover:hover { background: rgba(255,255,255,.04) !important; }
   .row-hover:hover td { color: #fff; }
 
-  /* ── TABS ── */
+  /* -- TABS -- */
   .tab-btn { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   .tab-btn:hover  { color: #fff !important; background: rgba(255,255,255,.06) !important; border-color: rgba(255,255,255,.15) !important; }
   .tab-btn.active { color: var(--bg) !important; background: var(--gold) !important; border-color: var(--gold) !important; box-shadow: 0 0 16px rgba(240,192,64,.4); }
 
-  /* ── CARDS ── */
+  /* -- CARDS -- */
   .feat-card { transition: transform .18s, box-shadow .18s !important; }
   .feat-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 40px rgba(0,0,0,.5) !important; border-color: rgba(255,255,255,.18) !important; }
 
@@ -108,7 +108,7 @@ const GLOBAL_CSS = `
     background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.14) 50%, transparent 100%);
   }
 
-  /* ── TICKER ── */
+  /* -- TICKER -- */
   .ticker-wrap { overflow: hidden; }
   .ticker-inner {
     display: flex; white-space: nowrap;
@@ -116,7 +116,7 @@ const GLOBAL_CSS = `
   }
   .ticker-inner:hover { animation-play-state: paused; }
 
-  /* ── ZELLIGE BAND ── */
+  /* -- ZELLIGE BAND -- */
   #zellige-band {
     height: 100px;
     position: relative; overflow: hidden;
@@ -127,7 +127,7 @@ const GLOBAL_CSS = `
     #zellige-band { height: 56px; }
   }
 
-  /* ── BRAND SHIMMER ── */
+  /* -- BRAND SHIMMER -- */
   .brand-shimmer {
     background: linear-gradient(90deg, #e0b030 0%, #f8e080 25%, #f0c040 50%, #c8901c 75%, #f0c040 100%);
     background-size: 600px 100%;
@@ -138,7 +138,7 @@ const GLOBAL_CSS = `
 
   .masi-glow { animation: glow-pulse 3s ease infinite; }
 
-  /* ── SESSION BADGE ── */
+  /* -- SESSION BADGE -- */
   .session-open {
     background: linear-gradient(135deg, #00c853, #00a040);
     border-radius: 8px; padding: 5px 12px;
@@ -155,7 +155,7 @@ const GLOBAL_CSS = `
     color: var(--dn); letter-spacing: .04em; white-space: nowrap;
   }
 
-  /* ── SECTOR BADGES ── */
+  /* -- SECTOR BADGES -- */
   .badge-banques    { background: rgba(59,130,246,.18); color: #60a5fa; border: 1px solid rgba(59,130,246,.3); }
   .badge-telecom    { background: rgba(236,72,153,.18); color: #f472b6; border: 1px solid rgba(236,72,153,.3); }
   .badge-industrie  { background: rgba(107,114,128,.18);color: #9ca3af; border: 1px solid rgba(107,114,128,.3); }
@@ -164,14 +164,14 @@ const GLOBAL_CSS = `
   .badge-accent     { background: rgba(59,130,246,.18); color: #60a5fa; border: 1px solid rgba(59,130,246,.3); }
   .badge-default    { background: rgba(255,255,255,.07); color: var(--t2); border: 1px solid rgba(255,255,255,.1); }
 
-  /* ── SKELETON ── */
+  /* -- SKELETON -- */
   .skeleton {
     background: linear-gradient(90deg, var(--s1) 25%, var(--s2) 50%, var(--s1) 75%);
     background-size: 400px 100%;
     animation: shimmer 1.4s ease infinite; border-radius: 4px;
   }
 
-  /* ── MOBILE NAV DRAWER ── */
+  /* -- MOBILE NAV DRAWER -- */
   .mob-nav-drawer {
     animation: slideDown .2s ease both;
     border-top: 1px solid var(--bd);
@@ -190,14 +190,14 @@ const GLOBAL_CSS = `
   .mob-tab-btn.active { color: var(--gold); background: var(--goldb); }
   .mob-tab-btn:active { background: rgba(255,255,255,.06); }
 
-  /* ── MOBILE SUMMARY CARDS ── */
+  /* -- MOBILE SUMMARY CARDS -- */
   .mob-stat-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
 
-  /* ── RESPONSIVE BREAKPOINTS ── */
+  /* -- RESPONSIVE BREAKPOINTS -- */
 
   /* Tablet — hide world clock, compress header */
   @media (max-width: 900px) {
@@ -231,9 +231,9 @@ const GLOBAL_CSS = `
   }
 `;
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    STATIC CONFIG
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const TABS = [
   { key: "overview",    label: "Overview"     },
   { key: "morocco",     label: "Casablanca"   },
@@ -248,9 +248,9 @@ const TABS = [
   { key: "bonds",       label: "Bonds"        },
 ];
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    FORMATTERS
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 // FIX #12: Fixed dead branch (both arms were identical toFixed(4)).
 // Added proper sub-0.001 formatting for micro-cap tokens (SHIB, PEPE, BONK).
 function fv(v) {
@@ -272,9 +272,9 @@ function fc(c) {
 }
 const isUp = (c) => Number(c ?? 0) >= 0;
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    RESPONSIVE HOOK
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function useIsMobile() {
   const [mob, setMob] = useState(() => typeof window !== "undefined" && window.innerWidth <= 768);
   useEffect(() => {
@@ -285,12 +285,12 @@ function useIsMobile() {
   return mob;
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    ZELLIGE CANVAS
-───────────────────────────────────────────────────────────── */
-/* ─────────────────────────────────────────────────────────────
+------------------------------------------------------------- */
+/* -------------------------------------------------------------
    ZELLIGE BAND — Hassan II mosque style canvas pattern
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function ZelligeBand() {
   const SRC = "/zellige.webp"
   return (
@@ -305,9 +305,9 @@ function ZelligeBand() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    BADGE
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function Badge({ change, size = "md" }) {
   const u = isUp(change);
   const sizes = { sm: { fontSize: ".62rem", padding: "2px 7px" }, md: { fontSize: ".75rem", padding: "3px 9px" }, lg: { fontSize: ".8rem", padding: "4px 12px" } };
@@ -325,9 +325,9 @@ function Badge({ change, size = "md" }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    SPARK
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 let _sid = 0;
 function Spark({ series, up, w = 80, h = 32, thick = false }) {
   const id = useMemo(() => `sp${_sid++}`, []);
@@ -360,9 +360,9 @@ function Spark({ series, up, w = 80, h = 32, thick = false }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    LIVE CLOCK
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function LiveClock() {
   const [time, setTime] = useState(() =>
     new Date().toLocaleTimeString("fr-FR", { timeZone: "Africa/Casablanca", hour12: false })
@@ -380,9 +380,9 @@ function LiveClock() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    TICKER
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function Ticker({ items }) {
   if (!items.length) return null;
   const all = [...items, ...items];
@@ -417,9 +417,9 @@ function Ticker({ items }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    WORLD CLOCK BAR
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const CLOCKS = [
   { city: "Casablanca", tz: "Africa/Casablanca",  flag: "🇲🇦", region: "Morocco",  mktOpen: [9,  17] },
   { city: "Dubai",      tz: "Asia/Dubai",          flag: "🇦🇪", region: "GCC",      mktOpen: [10, 14] },
@@ -475,7 +475,7 @@ function WorldClockBar() {
     </div>
   );
 }
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function useSessionStatus() {
   const [status, setStatus] = useState({ open: false, label: "" });
   useEffect(() => {
@@ -496,9 +496,9 @@ function useSessionStatus() {
   return status;
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    HEADER
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function Header({ updatedAt }) {
   const session = useSessionStatus();
   const isMob   = useIsMobile();
@@ -556,9 +556,9 @@ function Header({ updatedAt }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    NAV TABS  (desktop scrollable strip + mobile drawer)
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function NavTabs({ activeTab, setActiveTab }) {
   const isMob = useIsMobile();
   const [open, setOpen] = useState(false);
@@ -632,9 +632,9 @@ function NavTabs({ activeTab, setActiveTab }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    MARKET SUMMARY BAR  (Drahmi-style top summary)
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function MarketSummaryBar({ data }) {
   const allItems = useMemo(() => {
     const arr = [];
@@ -723,12 +723,12 @@ function MarketSummaryBar({ data }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    STAT STRIP  (4 hero numbers)
-───────────────────────────────────────────────────────────── */
-/* ─────────────────────────────────────────────────────────────
+------------------------------------------------------------- */
+/* -------------------------------------------------------------
    FEATURED CARDS
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function FeaturedCards({ items }) {
   if (!items?.length) return null;
   return (
@@ -772,9 +772,9 @@ function FeaturedCards({ items }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    HERO CHART CARD
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function HeroChart({ item, label }) {
   const [range, setRange] = useState("1W");
   if (!item) return null;
@@ -837,9 +837,9 @@ function HeroChart({ item, label }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    SECTOR BADGE HELPER
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const SECTOR_MAP = {
   ATW:"Banques", BCP:"Banques", BOA:"Banques", CIH:"Banques", CDM:"Banques",
   IAM:"Télécom", MNT:"Télécom",
@@ -857,9 +857,9 @@ function getSectorBadge(id) {
   return s ? <span className={cls} style={{ fontFamily:"var(--mono)", fontSize:".5rem", padding:"2px 8px", borderRadius:20, whiteSpace:"nowrap" }}>{s}</span> : null;
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    DATA TABLE  (sortable, Drahmi-style)
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function DataTable({ title, items, onSelect, selectedId }) {
   const [sortCol, setSortCol] = useState("change");
   const [sortDir, setSortDir] = useState(-1);
@@ -978,9 +978,9 @@ function DataTable({ title, items, onSelect, selectedId }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    DETAIL PANEL
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function DetailPanel({ item, onClose }) {
   if (!item) return null;
   const u = isUp(item.change);
@@ -1017,9 +1017,9 @@ function DetailPanel({ item, onClose }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    WATCHLIST WIDGET
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function Watchlist({ title, items, selectedId, onSelect }) {
   if (!items?.length) return null;
   return (
@@ -1070,9 +1070,9 @@ function Watchlist({ title, items, selectedId, onSelect }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    HEATMAP
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function Heatmap({ data }) {
   const items = useMemo(() => {
     const all = [];
@@ -1110,9 +1110,9 @@ function Heatmap({ data }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    FEAR & GREED  — dual card (Crypto live + Stock computed)
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function fgLabel(score) {
   if (score <= 24) return { label: "Extreme Fear",  color: "#e74c3c" };
   if (score <= 44) return { label: "Fear",           color: "#e67e22" };
@@ -1386,9 +1386,9 @@ function FearGreedCard({ marketData }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    STATIC NEWS  (sidebar)
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const NEWS = [
   { time: "14:42", title: "Bank Al-Maghrib holds benchmark rate steady at 2.75%",       tag: "BAM",  hot: true  },
   { time: "14:18", title: "Attijariwafa Bank reports +12% net profit growth in Q1 2026", tag: "ATW",  hot: false },
@@ -1418,9 +1418,9 @@ function NewsWidget() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    CALENDAR  (sidebar)
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const CALENDAR = [
   { time: "15:30", event: "🇺🇸 US PPI (March)",       imp: 3 },
   { time: "16:00", event: "🇲🇦 BAM Reserves",         imp: 2 },
@@ -1449,9 +1449,9 @@ function CalWidget() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    LOADER
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 function Loader() {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 400, flexDirection: "column", gap: 14 }}>
@@ -1464,9 +1464,9 @@ function Loader() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    APP (root)
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 export default function App() {
   const [tab,          setTab]          = useState("overview");
   const [data,         setData]         = useState({});
@@ -1565,7 +1565,7 @@ export default function App() {
   return (
     <div style={{ background: "var(--bg)", color: "var(--t1)", minHeight: "100vh", backgroundImage: "radial-gradient(ellipse at 50% 0%, rgba(0,200,83,.04) 0%, transparent 60%)" }}>
 
-      {/* ── STICKY HEADER WRAPPER — single sticky unit, no top-math ── */}
+      {/* -- STICKY HEADER WRAPPER — single sticky unit, no top-math -- */}
       <div style={{ position: "sticky", top: 0, zIndex: 700 }}>
         <ZelligeBand />
         <Ticker items={tickerItems.length ? tickerItems : [{ id: "MASI", value: 0, change: 0 }]} />
@@ -1599,7 +1599,7 @@ export default function App() {
           hasRightSidebar ? "236px" : "",
         ].filter(Boolean).join(" ");
 
-        // ── Sidebar content helpers ───────────────────────────────
+        // -- Sidebar content helpers -------------------------------
         const LeftSidebar = () => {
           if (tab === "overview") {
             // FeaturedCards already shows headline global items — sidebar shows Morocco stocks instead
@@ -1651,10 +1651,10 @@ export default function App() {
           </>
         );
 
-        // ── Main content per tab ──────────────────────────────────
+        // -- Main content per tab ----------------------------------
         const MainContent = () => (
           <>
-            {/* ── OVERVIEW ── */}
+            {/* -- OVERVIEW -- */}
             {tab === "overview" && <>
               <MarketSummaryBar data={data} />
               {/* FeaturedCards = 4 headline cards (MASI, USD, BTC, top stock). No HeroChart here — would duplicate MASI. */}
@@ -1668,7 +1668,7 @@ export default function App() {
               </div>
             </>}
 
-            {/* ── MOROCCO ── */}
+            {/* -- MOROCCO -- */}
             {tab === "morocco" && <>
               <MarketSummaryBar data={data} />
               <HeroChart item={heroItem} label="Casablanca" />
@@ -1681,7 +1681,7 @@ export default function App() {
               <Heatmap data={data} />
             </>}
 
-            {/* ── INDICES ── */}
+            {/* -- INDICES -- */}
             {tab === "indices" && <>
               <HeroChart item={heroItem} label="Indices" />
               {/* Left sidebar already shows Global Indices — main shows per-region breakdowns only */}
@@ -1693,7 +1693,7 @@ export default function App() {
               </div>
             </>}
 
-            {/* ── USA / EUROPE / GCC / ASIA ── */}
+            {/* -- USA / EUROPE / GCC / ASIA -- */}
             {["usa","europe","gcc","asia"].includes(tab) && <>
               <HeroChart item={heroItem} label={tabLabel} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
@@ -1703,14 +1703,14 @@ export default function App() {
               </div>
             </>}
 
-            {/* ── CURRENCIES ── */}
+            {/* -- CURRENCIES -- */}
             {tab === "currencies" && <>
               <HeroChart item={heroItem} label="Forex" />
               {/* StatStrip removed — table below already contains those same top pairs */}
               <DataTable title="All FX / MAD Pairs" items={fx} onSelect={handleSelect} selectedId={selItem?.id} />
             </>}
 
-            {/* ── CRYPTO ── */}
+            {/* -- CRYPTO -- */}
             {tab === "crypto" && <>
               <HeroChart item={heroItem} label="Crypto" />
               {/* StatStrip removed — LARGE CAP table below already shows same items */}
@@ -1722,14 +1722,14 @@ export default function App() {
               </div>
             </>}
 
-            {/* ── COMMODITIES ── */}
+            {/* -- COMMODITIES -- */}
             {tab === "commodities" && <>
               <HeroChart item={heroItem} label="Commodities" />
               {/* StatStrip removed — left sidebar has Metals, right has Energy, table has everything */}
               <DataTable title="All Commodities" items={data["COMMODITIES"]||[]} onSelect={handleSelect} selectedId={selItem?.id} />
             </>}
 
-            {/* ── BONDS ── */}
+            {/* -- BONDS -- */}
             {tab === "bonds" && <>
               <HeroChart item={heroItem} label="Bonds" />
               <div className="stats-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
