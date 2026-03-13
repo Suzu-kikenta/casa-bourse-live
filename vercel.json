@@ -1,1 +1,4 @@
-{"buildCommand": "react-scripts --max_old_space_size=4096 build"} 
+{
+  "buildCommand": "CI=false react-scripts build",
+  "framework": "create-react-app"
+}
