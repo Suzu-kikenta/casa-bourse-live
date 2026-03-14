@@ -32,7 +32,7 @@ const GLOBAL_CSS = `
     --sans:    'IBM Plex Sans', sans-serif;
     --serif:   'Playfair Display', serif;
     --radius:  12px;
-    --hdr-h:   258px;   /* zellige70 + ticker28 + header58 + worldclock54 + nav48 */
+    --hdr-h:   258px;
   }
 
   html, body { background: var(--bg); color: var(--t1); }
