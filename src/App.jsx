@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 
 /* -------------------------------------------------------------
    GLOBAL CSS  (injected once into <head>)
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 const GLOBAL_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
@@ -233,7 +233,7 @@ const GLOBAL_CSS = `
 
 /* -------------------------------------------------------------
    STATIC CONFIG
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 const TABS = [
   { key: "overview",    label: "Overview"     },
   { key: "morocco",     label: "Casablanca"   },
@@ -250,7 +250,7 @@ const TABS = [
 
 /* -------------------------------------------------------------
    FORMATTERS
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 // FIX #12: Fixed dead branch (both arms were identical toFixed(4)).
 // Added proper sub-0.001 formatting for micro-cap tokens (SHIB, PEPE, BONK).
 function fv(v) {
@@ -274,7 +274,7 @@ const isUp = (c) => Number(c ?? 0) >= 0;
 
 /* -------------------------------------------------------------
    RESPONSIVE HOOK
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function useIsMobile() {
   const [mob, setMob] = useState(() => typeof window !== "undefined" && window.innerWidth <= 768);
   useEffect(() => {
@@ -287,10 +287,10 @@ function useIsMobile() {
 
 /* -------------------------------------------------------------
    ZELLIGE CANVAS
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 /* -------------------------------------------------------------
    ZELLIGE BAND — Hassan II mosque style canvas pattern
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function ZelligeBand() {
   const SRC = "/zellige.webp"
   return (
@@ -307,7 +307,7 @@ function ZelligeBand() {
 
 /* -------------------------------------------------------------
    BADGE
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function Badge({ change, size = "md" }) {
   const u = isUp(change);
   const sizes = { sm: { fontSize: ".62rem", padding: "2px 7px" }, md: { fontSize: ".75rem", padding: "3px 9px" }, lg: { fontSize: ".8rem", padding: "4px 12px" } };
@@ -327,7 +327,7 @@ function Badge({ change, size = "md" }) {
 
 /* -------------------------------------------------------------
    SPARK
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 let _sid = 0;
 function Spark({ series, up, w = 80, h = 32, thick = false }) {
   const id = useMemo(() => `sp${_sid++}`, []);
@@ -362,7 +362,7 @@ function Spark({ series, up, w = 80, h = 32, thick = false }) {
 
 /* -------------------------------------------------------------
    LIVE CLOCK
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function LiveClock() {
   const [time, setTime] = useState(() =>
     new Date().toLocaleTimeString("fr-FR", { timeZone: "Africa/Casablanca", hour12: false })
@@ -382,7 +382,7 @@ function LiveClock() {
 
 /* -------------------------------------------------------------
    TICKER
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function Ticker({ items }) {
   if (!items.length) return null;
   const all = [...items, ...items];
@@ -419,7 +419,7 @@ function Ticker({ items }) {
 
 /* -------------------------------------------------------------
    WORLD CLOCK BAR
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 const CLOCKS = [
   { city: "Casablanca", tz: "Africa/Casablanca",  flag: "🇲🇦", region: "Morocco",  mktOpen: [9,  17] },
   { city: "Dubai",      tz: "Asia/Dubai",          flag: "🇦🇪", region: "GCC",      mktOpen: [10, 14] },
@@ -475,7 +475,7 @@ function WorldClockBar() {
     </div>
   );
 }
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function useSessionStatus() {
   const [status, setStatus] = useState({ open: false, label: "" });
   useEffect(() => {
@@ -498,7 +498,7 @@ function useSessionStatus() {
 
 /* -------------------------------------------------------------
    HEADER
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function Header({ updatedAt }) {
   const session = useSessionStatus();
   const isMob   = useIsMobile();
@@ -558,7 +558,7 @@ function Header({ updatedAt }) {
 
 /* -------------------------------------------------------------
    NAV TABS  (desktop scrollable strip + mobile drawer)
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function NavTabs({ activeTab, setActiveTab }) {
   const isMob = useIsMobile();
   const [open, setOpen] = useState(false);
@@ -634,7 +634,7 @@ function NavTabs({ activeTab, setActiveTab }) {
 
 /* -------------------------------------------------------------
    MARKET SUMMARY BAR  (Drahmi-style top summary)
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function MarketSummaryBar({ data }) {
   const allItems = useMemo(() => {
     const arr = [];
@@ -725,10 +725,10 @@ function MarketSummaryBar({ data }) {
 
 /* -------------------------------------------------------------
    STAT STRIP  (4 hero numbers)
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 /* -------------------------------------------------------------
    FEATURED CARDS
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function FeaturedCards({ items }) {
   if (!items?.length) return null;
   return (
@@ -774,7 +774,7 @@ function FeaturedCards({ items }) {
 
 /* -------------------------------------------------------------
    HERO CHART CARD
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function HeroChart({ item, label }) {
   const [range, setRange] = useState("1W");
   if (!item) return null;
@@ -839,7 +839,7 @@ function HeroChart({ item, label }) {
 
 /* -------------------------------------------------------------
    SECTOR BADGE HELPER
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 const SECTOR_MAP = {
   ATW:"Banques", BCP:"Banques", BOA:"Banques", CIH:"Banques", CDM:"Banques",
   IAM:"Télécom", MNT:"Télécom",
@@ -859,7 +859,7 @@ function getSectorBadge(id) {
 
 /* -------------------------------------------------------------
    DATA TABLE  (sortable, Drahmi-style)
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function DataTable({ title, items, onSelect, selectedId }) {
   const [sortCol, setSortCol] = useState("change");
   const [sortDir, setSortDir] = useState(-1);
@@ -980,7 +980,7 @@ function DataTable({ title, items, onSelect, selectedId }) {
 
 /* -------------------------------------------------------------
    DETAIL PANEL
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function DetailPanel({ item, onClose }) {
   if (!item) return null;
   const u = isUp(item.change);
@@ -1019,7 +1019,7 @@ function DetailPanel({ item, onClose }) {
 
 /* -------------------------------------------------------------
    WATCHLIST WIDGET
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function Watchlist({ title, items, selectedId, onSelect }) {
   if (!items?.length) return null;
   return (
@@ -1072,7 +1072,7 @@ function Watchlist({ title, items, selectedId, onSelect }) {
 
 /* -------------------------------------------------------------
    HEATMAP
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function Heatmap({ data }) {
   const items = useMemo(() => {
     const all = [];
@@ -1112,7 +1112,7 @@ function Heatmap({ data }) {
 
 /* -------------------------------------------------------------
    FEAR & GREED  — dual card (Crypto live + Stock computed)
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function fgLabel(score) {
   if (score <= 24) return { label: "Extreme Fear",  color: "#e74c3c" };
   if (score <= 44) return { label: "Fear",           color: "#e67e22" };
@@ -1388,7 +1388,7 @@ function FearGreedCard({ marketData }) {
 
 /* -------------------------------------------------------------
    STATIC NEWS  (sidebar)
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 const NEWS = [
   { time: "14:42", title: "Bank Al-Maghrib holds benchmark rate steady at 2.75%",       tag: "BAM",  hot: true  },
   { time: "14:18", title: "Attijariwafa Bank reports +12% net profit growth in Q1 2026", tag: "ATW",  hot: false },
@@ -1420,7 +1420,7 @@ function NewsWidget() {
 
 /* -------------------------------------------------------------
    CALENDAR  (sidebar)
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 const CALENDAR = [
   { time: "15:30", event: "🇺🇸 US PPI (March)",       imp: 3 },
   { time: "16:00", event: "🇲🇦 BAM Reserves",         imp: 2 },
@@ -1451,7 +1451,7 @@ function CalWidget() {
 
 /* -------------------------------------------------------------
    LOADER
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 function Loader() {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 400, flexDirection: "column", gap: 14 }}>
@@ -1466,7 +1466,7 @@ function Loader() {
 
 /* -------------------------------------------------------------
    APP (root)
-------------------------------------------------------------- */
+// -------------------------------------------------------------
 export default function App() {
   const [tab,          setTab]          = useState("overview");
   const [data,         setData]         = useState({});
@@ -1798,3 +1798,4 @@ export default function App() {
     </div>
   );
 }
+
