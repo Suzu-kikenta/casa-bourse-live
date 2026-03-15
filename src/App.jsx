@@ -40,7 +40,7 @@ const GLOBAL_CSS = `
   .tab-pill:hover { background: rgba(255,255,255,0.07) !important; color: #fff !important; }
   .tab-pill.active { background: rgba(255,255,255,0.1) !important; color: #fff !important; }
   .nav-btn:hover { color: #fff !important; }
-  .nav-btn.active { color: #f0c040 !important; border-bottom: 2px solid #f0c040 !important; }
+  .nav-btn.active { color: #0d1117 !important; background: #f0c040 !important; border-radius: 6px !important; border-bottom: none !important; }
   .card-hover:hover { border-color: rgba(255,255,255,0.15) !important; background: rgba(255,255,255,0.03) !important; }
   .btn-ghost:hover { background: rgba(255,255,255,0.08) !important; }
 `;
@@ -247,7 +247,7 @@ function WorldClock() {
     <div style={{
       display:"flex", alignItems:"stretch", overflowX:"auto", scrollbarWidth:"none",
       background:C.surface, borderBottom:`1px solid ${C.border}`,
-      position:"sticky", top:32, zIndex:490,
+      position:"sticky", top:38, zIndex:490,
     }}>
       {CLOCKS.map(c => {
         const timeStr = now.toLocaleTimeString("en-GB",{timeZone:c.tz,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
@@ -298,7 +298,7 @@ function Navbar({ activeTab, onTab, updatedAt }) {
       background:C.surface,
       borderBottom:`1px solid ${C.border}`,
       height:52,
-      position:"sticky", top:38, zIndex:500,
+      position:"sticky", top:98, zIndex:500,
     }}>
       {/* Logo */}
       <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
@@ -323,9 +323,11 @@ function Navbar({ activeTab, onTab, updatedAt }) {
             className={`nav-btn${activeTab===tab.key?" active":""}`}
             style={{
               fontFamily:F.sans, fontSize:"0.8rem", fontWeight:activeTab===tab.key?600:400,
-              color: activeTab===tab.key ? C.gold : C.text2,
-              background:"none", border:"none",
-              borderBottom: activeTab===tab.key ? `2px solid ${C.gold}` : "2px solid transparent",
+              color: activeTab===tab.key ? "#0d1117" : C.text2,
+              background: activeTab===tab.key ? C.gold : "none",
+              border:"none",
+              borderBottom: activeTab===tab.key ? "none" : "2px solid transparent",
+              borderRadius: activeTab===tab.key ? 6 : 0,
               padding:"0 12px", height:52, cursor:"pointer",
               transition:"all 0.15s", whiteSpace:"nowrap",
               display:"flex", alignItems:"center", gap:5,
@@ -858,6 +860,129 @@ function CalPanel() {
 /* ═══════════════════════════════════════════════════
    HEATMAP
 ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   FEAR & GREED GAUGE
+═══════════════════════════════════════════════════ */
+function fgZone(score) {
+  if (score <= 24) return { label:"Extreme Fear", color:"#e74c3c" };
+  if (score <= 44) return { label:"Fear",          color:"#e67e22" };
+  if (score <= 54) return { label:"Neutral",       color:"#f0c040" };
+  if (score <= 74) return { label:"Greed",         color:"#2ecc71" };
+  return              { label:"Extreme Greed",  color:"#00c853" };
+}
+
+function Gauge({ score, size=180 }) {
+  const cx = size/2, cy = size*0.62, R = size*0.38, Ri = size*0.24;
+  const zone = fgZone(score);
+  function pt(pct, r) {
+    const deg = 180 - (pct/100)*180;
+    const rad = deg*Math.PI/180;
+    return [cx + Math.cos(rad)*r, cy - Math.sin(rad)*r];
+  }
+  function arc(from, to, rO, rI) {
+    const [x1,y1]=pt(from,rO),[x2,y2]=pt(to,rO);
+    const [x3,y3]=pt(to,rI),[x4,y4]=pt(from,rI);
+    const lg=(to-from)>50?1:0;
+    return `M${x1.toFixed(1)},${y1.toFixed(1)} A${rO},${rO} 0 ${lg} 0 ${x2.toFixed(1)},${y2.toFixed(1)} L${x3.toFixed(1)},${y3.toFixed(1)} A${rI},${rI} 0 ${lg} 1 ${x4.toFixed(1)},${y4.toFixed(1)} Z`;
+  }
+  const zones = [
+    {from:0,  to:25, color:"#e74c3c"},
+    {from:25, to:45, color:"#e67e22"},
+    {from:45, to:55, color:"#f0c040"},
+    {from:55, to:75, color:"#2ecc71"},
+    {from:75, to:100,color:"#00c853"},
+  ];
+  const needleDeg = 180 - (score/100)*180;
+  const needleRad = needleDeg*Math.PI/180;
+  const nLen = R*0.82;
+  const nx = cx + Math.cos(needleRad)*nLen;
+  const ny = cy - Math.sin(needleRad)*nLen;
+  return (
+    <svg width={size} height={size*0.72} viewBox={`0 0 ${size} ${size*0.72}`} style={{display:"block",margin:"0 auto"}}>
+      {zones.map((z,i) => (
+        <path key={i} d={arc(z.from, z.to, R, Ri)} fill={z.color} opacity={0.85}/>
+      ))}
+      <line x1={cx+1} y1={cy+1} x2={nx+1} y2={ny+1} stroke="rgba(0,0,0,.5)" strokeWidth={3} strokeLinecap="round"/>
+      <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#e0e0e0" strokeWidth={2.5} strokeLinecap="round"/>
+      <circle cx={cx} cy={cy} r={size*0.05} fill="#333" stroke="rgba(255,255,255,.2)" strokeWidth={1}/>
+      <circle cx={cx} cy={cy} r={size*0.025} fill={zone.color}/>
+      <text x={cx} y={cy+size*0.12} textAnchor="middle" style={{fontFamily:"var(--mono)",fontSize:size*0.18,fontWeight:700,fill:zone.color}}>{score}</text>
+    </svg>
+  );
+}
+
+function FearGreedCard({ data }) {
+  // Compute Casablanca score from market breadth
+  const banks   = data["BANKS"]                || [];
+  const telecom = data["TELECOM / UTILITIES"]  || [];
+  const industry= data["INDUSTRY / MATERIALS"] || [];
+  const all = [...banks,...telecom,...industry];
+  const casaScore = useMemo(() => {
+    if (!all.length) return 50;
+    const ups = all.filter(i => Number(i.change||0) >= 0).length;
+    const avg = all.reduce((s,i)=>s+Number(i.change||0),0)/all.length;
+    const breadth = (ups/all.length)*100;
+    return Math.min(100, Math.max(0, Math.round(breadth*0.5 + (avg+3)*8)));
+  }, [all.length]);
+
+  // Crypto score from alt.me proxy (static fallback)
+  const cryptoScore = useMemo(() => {
+    const crypto = data["CRYPTO"] || data["LARGE CAP"] || [];
+    if (!crypto.length) return 16;
+    const ups = crypto.filter(i => Number(i.change||0) >= 0).length;
+    const avg = crypto.reduce((s,i)=>s+Number(i.change||0),0)/crypto.length;
+    return Math.min(100, Math.max(0, Math.round((ups/crypto.length)*50 + (avg+5)*5)));
+  }, []);
+
+  const casaZone   = fgZone(casaScore);
+  const cryptoZone = fgZone(cryptoScore);
+
+  return (
+    <div style={{
+      background:C.surface, border:`1px solid ${C.border}`,
+      borderRadius:12, overflow:"hidden",
+    }}>
+      <div style={{
+        padding:"10px 16px", borderBottom:`1px solid ${C.border}`,
+        fontFamily:F.mono, fontSize:"0.65rem", letterSpacing:"0.14em",
+        color:C.gold, background:"rgba(240,192,64,.06)",
+        display:"flex", justifyContent:"space-between",
+      }}>
+        <span>FEAR &amp; GREED INDEX</span>
+        <span style={{color:C.text3}}>Live · Updated daily</span>
+      </div>
+      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:1}}>
+        {[
+          {label:"🇲🇦 Casablanca Market", score:casaScore, zone:casaZone, sub:"CSE · Breadth + Momentum"},
+          {label:"₿ Crypto Market",       score:cryptoScore, zone:cryptoZone, sub:"BTC/ETH sentiment"},
+        ].map((g,i) => (
+          <div key={i} style={{
+            padding:"16px", borderRight:i===0?`1px solid ${C.border}`:"none",
+          }}>
+            <div style={{fontFamily:F.sans, fontSize:"0.8rem", fontWeight:600, color:C.text, marginBottom:4}}>{g.label}</div>
+            <div style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.text3, marginBottom:12}}>What emotion is driving the market now?</div>
+            <div style={{fontFamily:F.sans, fontSize:"0.7rem", color:C.text3, marginBottom:4}}>Now:</div>
+            <div style={{fontFamily:F.sans, fontSize:"1.1rem", fontWeight:700, color:g.zone.color, marginBottom:12}}>{g.zone.label}</div>
+            <Gauge score={g.score} size={160}/>
+            <div style={{
+              display:"grid", gridTemplateColumns:"auto 1fr", gap:"3px 10px",
+              marginTop:10, fontFamily:F.mono, fontSize:"0.6rem",
+            }}>
+              {[[0,"Extreme Fear"],[25,"Fear"],[50,"Neutral"],[75,"Greed"],[100,"Extreme Greed"]].map(([v,lbl])=>(
+                <React.Fragment key={v}>
+                  <span style={{color:C.text3}}>{v}</span>
+                  <span style={{color: g.score >= v ? g.zone.color : C.text3}}>{lbl}</span>
+                </React.Fragment>
+              ))}
+            </div>
+            <div style={{fontFamily:F.mono, fontSize:"0.58rem", color:C.text3, marginTop:8}}>{g.sub}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Heatmap({ data }) {
   const items = useMemo(()=>{
     const arr=[];
@@ -981,15 +1106,18 @@ export default function App() {
   const allItems = useMemo(()=>{
     const skip=new Set(["FEATURED MARKET BOXES"]);
     if(activeSector) return data[activeSector]||[];
-    if(tab==="usa")    return data["USA STOCKS"]    || [];
-    if(tab==="europe") return data["EUROPE STOCKS"] || [];
-    if(tab==="gcc")    return data["GCC STOCKS"]    || [];
-    if(tab==="asia")   return data["ASIA STOCKS"]   || [];
-    const arr=[];
-    Object.entries(data).forEach(([k,v])=>{
-      if(!skip.has(k)&&Array.isArray(v))arr.push(...v);
-    });
-    return arr;
+    if(tab==="usa")        return data["USA STOCKS"]    || [];
+    if(tab==="europe")     return data["EUROPE STOCKS"] || [];
+    if(tab==="gcc")        return data["GCC STOCKS"]    || [];
+    if(tab==="asia")       return data["ASIA STOCKS"]   || [];
+    if(tab==="morocco")    return [...(data["BANKS"]||[]), ...(data["TELECOM / UTILITIES"]||[]), ...(data["INDUSTRY / MATERIALS"]||[])];
+    if(tab==="currencies") return data["FX / MAD"]      || [];
+    if(tab==="crypto")     return data["CRYPTO"]        || data["LARGE CAP"] || [];
+    if(tab==="commodities")return data["COMMODITIES"]   || [];
+    if(tab==="bonds")      return data["RATES / BONDS"] || [];
+    if(tab==="indices")    return data["GLOBAL INDICES"]|| [];
+    // overview: show Morocco stocks only
+    return [...(data["BANKS"]||[]), ...(data["TELECOM / UTILITIES"]||[]), ...(data["INDUSTRY / MATERIALS"]||[])];
   },[data,activeSector,tab]);
 
   const tabLabel = TABS.find(t=>t.key===tab)?.label||tab;
@@ -1012,11 +1140,11 @@ export default function App() {
       {/* Ticker */}
       <Ticker items={tickerItems}/>
 
+      {/* World Clock - above tabs */}
+      <WorldClock/>
+
       {/* Navbar */}
       <Navbar activeTab={tab} onTab={setTab} updatedAt={updatedAt}/>
-
-      {/* World Clock */}
-      <WorldClock/>
 
       {/* Index strip */}
       {!loading && !error && (featured.length||fx.length) && (
@@ -1069,7 +1197,7 @@ export default function App() {
             {heroItem && <div className="fade-up"><ChartHero item={heroItem} label={tabLabel}/></div>}
 
             {/* Sector filter */}
-            {allItems.length>0 && (
+            {["overview","morocco"].includes(tab) && allItems.length>0 && (
               <div className="fade-up">
                 <SectorPills data={data} activeSector={activeSector} onSector={setActiveSector}/>
               </div>
@@ -1083,6 +1211,9 @@ export default function App() {
             )}
 
             {/* Heatmap */}
+            {["overview","morocco"].includes(tab) && (
+              <div className="fade-up"><FearGreedCard data={data}/></div>
+            )}
             {["overview","morocco"].includes(tab) && (
               <div className="fade-up"><Heatmap data={data}/></div>
             )}
