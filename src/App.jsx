@@ -579,15 +579,16 @@ function StockTable({ items, activeId, onSelect }) {
                   background: isActive?"rgba(255,255,255,0.05)":"transparent",
                 }}>
                 {/* Name */}
-                <td style={{padding:"6px 12px"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <td style={{padding:"10px 12px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <div style={{
-                      width:26, height:26, borderRadius:6, flexShrink:0,
+                      width:32, height:32, borderRadius:8, flexShrink:0,
                       background:`linear-gradient(135deg,${u?"rgba(52,199,89,0.15)":"rgba(255,59,48,0.15)"},${u?"rgba(52,199,89,0.05)":"rgba(255,59,48,0.05)"})`,
                       border:`1px solid ${u?"rgba(52,199,89,0.2)":"rgba(255,59,48,0.2)"}`,
                       display:"flex", alignItems:"center", justifyContent:"center",
-                      fontFamily:F.mono, fontSize:"0.55rem", fontWeight:700,
+                      fontFamily:F.mono, fontSize:"0.58rem", fontWeight:700,
                       color: u?C.up:C.dn,
+                      letterSpacing:"-0.02em",
                     }}>
                       {item.id.slice(0,3)}
                     </div>
@@ -982,529 +983,6 @@ function FearGreedCard({ data }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════
-   CRYPTO GRID  (Bloomberg-style price cards)
-═══════════════════════════════════════════════════ */
-function CryptoGrid({ data }) {
-  const allCrypto = useMemo(() => {
-    const keys = ["LARGE CAP","CRYPTO","DEFI / LAYER2","MEME / TRENDING","LAYER1 / INFRA","STABLECOINS"];
-    const arr = [];
-    keys.forEach(k => { if(data[k]) arr.push(...data[k]); });
-    return arr.filter(i => i?.id);
-  }, [data]);
-
-  if (!allCrypto.length) return null;
-
-  // Relative performance bar chart data
-  const sorted = [...allCrypto].sort((a,b) => Number(b.change)-Number(a.change));
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-      {/* Grid of cards */}
-      <div style={{
-        display:"grid",
-        gridTemplateColumns:"repeat(auto-fill, minmax(160px, 1fr))",
-        gap:2,
-        background:C.border,
-        border:`1px solid ${C.border}`,
-        borderRadius:10,
-        overflow:"hidden",
-      }}>
-        {allCrypto.map((item, i) => {
-          const u = Number(item.change||0) >= 0;
-          const bg = u ? "rgba(0,200,83,.13)" : "rgba(255,59,48,.12)";
-          const series = item.series || [];
-          const hi = series.length ? Math.max(...series) : null;
-          const lo = series.length ? Math.min(...series) : null;
-          return (
-            <div key={i} style={{
-              background: u ? "rgba(0,200,83,.07)" : "rgba(255,59,48,.07)",
-              padding:"10px 10px 8px",
-              display:"flex", flexDirection:"column", gap:4,
-              cursor:"pointer", transition:"filter .15s",
-            }}
-            onMouseEnter={e=>e.currentTarget.style.filter="brightness(1.3)"}
-            onMouseLeave={e=>e.currentTarget.style.filter=""}>
-              {/* Top row: symbol + change */}
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                <div style={{display:"flex",alignItems:"center",gap:5}}>
-                  <div style={{
-                    width:18,height:18,borderRadius:4,flexShrink:0,
-                    background:u?"rgba(0,200,83,.3)":"rgba(255,59,48,.3)",
-                    display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:9,fontWeight:700,color:u?"#00c853":"#ff3b30",
-                    fontFamily:F.mono,
-                  }}>{(item.symbol||item.id||"").slice(0,2)}</div>
-                  <span style={{fontFamily:F.mono,fontSize:"0.62rem",fontWeight:700,color:C.text2,letterSpacing:"0.04em"}}>{item.id}</span>
-                </div>
-                <span style={{fontFamily:F.mono,fontSize:"0.6rem",fontWeight:600,color:u?"#00c853":"#ff3b30"}}>
-                  {u?"+":""}{Number(item.change||0).toFixed(2)}%
-                </span>
-              </div>
-
-              {/* Price */}
-              <div style={{fontFamily:F.mono,fontSize:"1.05rem",fontWeight:700,color:C.text,letterSpacing:"-0.01em",lineHeight:1}}>
-                {Number(item.value).toLocaleString("fr-FR",{maximumFractionDigits:Number(item.value)>100?2:Number(item.value)>1?4:6})}
-              </div>
-
-              {/* Sparkline */}
-              <div style={{height:36,margin:"2px 0"}}>
-                <Spark series={series} up={u} w={160} h={36}/>
-              </div>
-
-              {/* Hi/Lo */}
-              {hi !== null && (
-                <div style={{display:"flex",justifyContent:"space-between",fontFamily:F.mono,fontSize:"0.52rem",color:C.text3}}>
-                  <span>H {Number(hi).toLocaleString("fr-FR",{maximumFractionDigits:hi>100?2:hi>1?3:6})}</span>
-                  <span>L {Number(lo).toLocaleString("fr-FR",{maximumFractionDigits:lo>100?2:lo>1?3:6})}</span>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Relative performance bar chart */}
-      <div style={{
-        background:C.surface, border:`1px solid ${C.border}`,
-        borderRadius:10, padding:"14px 16px",
-      }}>
-        <div style={{fontFamily:F.mono,fontSize:"0.6rem",color:C.text3,letterSpacing:"0.12em",marginBottom:12,textAlign:"center"}}>
-          1 DAY RELATIVE PERFORMANCE [USD]
-        </div>
-        <div style={{display:"flex",alignItems:"flex-end",gap:2,height:80,overflowX:"auto"}}>
-          {sorted.map((item,i) => {
-            const pct = Number(item.change||0);
-            const u = pct >= 0;
-            const maxPct = Math.max(...sorted.map(x=>Math.abs(Number(x.change||0))),1);
-            const barH = Math.abs(pct)/maxPct * 70;
-            return (
-              <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,flexShrink:0,minWidth:28}}>
-                {u && <div style={{fontFamily:F.mono,fontSize:"0.45rem",color:"#00c853",marginBottom:1}}>{pct.toFixed(2)}%</div>}
-                <div style={{
-                  width:20, height:barH||2, borderRadius:2,
-                  background: u ? "rgba(0,200,83,.7)" : "rgba(255,59,48,.7)",
-                  alignSelf: u ? "flex-end" : "flex-start",
-                  marginTop: u ? "auto" : 0,
-                }}/>
-                {!u && <div style={{fontFamily:F.mono,fontSize:"0.45rem",color:"#ff3b30",marginTop:1}}>{pct.toFixed(2)}%</div>}
-                <div style={{fontFamily:F.mono,fontSize:"0.48rem",color:C.text3,transform:"rotate(-45deg)",transformOrigin:"top left",marginTop:4,whiteSpace:"nowrap"}}>{item.id}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════
-   FX CARD GRID  (like the reference screenshot)
-═══════════════════════════════════════════════════ */
-function FXCardGrid({ items }) {
-  if (!items?.length) return null;
-  return (
-    <div>
-      {/* Price cards grid */}
-      <div style={{
-        display:"grid",
-        gridTemplateColumns:"repeat(auto-fill, minmax(220px, 1fr))",
-        gap:3, marginBottom:16,
-      }}>
-        {items.map((item, i) => {
-          const u = Number(item.change||0) >= 0;
-          const bg = u ? "rgba(0,120,60,.85)" : "rgba(140,20,20,.85)";
-          const hi = item.series?.length ? Math.max(...item.series) : null;
-          const lo = item.series?.length ? Math.min(...item.series) : null;
-          return (
-            <div key={i} style={{
-              background: bg,
-              borderRadius:8, padding:"10px 12px",
-              position:"relative", overflow:"hidden",
-              minHeight:100,
-            }}>
-              {/* Header row */}
-              <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:4}}>
-                <span style={{fontFamily:F.mono, fontSize:"0.72rem", fontWeight:700, color:"rgba(255,255,255,.9)", letterSpacing:"0.06em"}}>
-                  {item.id}
-                </span>
-                <div style={{textAlign:"right"}}>
-                  <span style={{fontFamily:F.mono, fontSize:"0.65rem", color:"rgba(255,255,255,.8)"}}>
-                    {Number(item.change||0) >= 0 ? "+" : ""}{Number(item.change||0).toFixed(2)}%
-                  </span>
-                </div>
-              </div>
-              {/* Price */}
-              <div style={{fontFamily:F.mono, fontSize:"1.5rem", fontWeight:700, color:"#fff", letterSpacing:"-0.01em", lineHeight:1, marginBottom:6}}>
-                {Number(item.value||0).toLocaleString("fr-FR", {minimumFractionDigits:3, maximumFractionDigits:4})}
-              </div>
-              {/* H/L */}
-              {hi !== null && (
-                <div style={{display:"flex", gap:8, marginBottom:6}}>
-                  <span style={{fontFamily:F.mono, fontSize:"0.58rem", color:"rgba(255,255,255,.7)"}}>
-                    H {Number(hi).toFixed(4)}
-                  </span>
-                  <span style={{fontFamily:F.mono, fontSize:"0.58rem", color:"rgba(255,255,255,.7)"}}>
-                    L {Number(lo).toFixed(4)}
-                  </span>
-                </div>
-              )}
-              {/* Sparkline */}
-              {item.series?.length > 1 && (
-                <div style={{height:36, marginTop:4}}>
-                  <Spark series={item.series} up={u} w={200} h={36}/>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      {/* Performance bar chart */}
-      <div style={{
-        background:C.surface, border:`1px solid ${C.border}`,
-        borderRadius:12, padding:"16px",
-      }}>
-        <div style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.gold, letterSpacing:"0.14em", textAlign:"center", marginBottom:16}}>
-          1 DAY RELATIVE PERFORMANCE / MAD
-        </div>
-        <div style={{display:"flex", alignItems:"flex-end", justifyContent:"center", gap:6, height:120}}>
-          {items.slice(0,10).map((item, i) => {
-            const chg = Number(item.change||0);
-            const maxAbs = Math.max(...items.slice(0,10).map(x => Math.abs(Number(x.change||0))), 0.01);
-            const barH = Math.abs(chg) / maxAbs * 80;
-            const u = chg >= 0;
-            return (
-              <div key={i} style={{display:"flex", flexDirection:"column", alignItems:"center", gap:4, flex:1, minWidth:0}}>
-                {u && <span style={{fontFamily:F.mono, fontSize:"0.55rem", color:"#2ecc71"}}>{chg > 0 ? "+" : ""}{chg.toFixed(2)}%</span>}
-                <div style={{
-                  width:"100%", height:barH,
-                  background: u ? "rgba(46,204,113,.7)" : "rgba(231,76,60,.7)",
-                  borderRadius:u ? "3px 3px 0 0" : "0 0 3px 3px",
-                  marginTop: u ? 0 : "auto",
-                  alignSelf: u ? "flex-end" : "flex-start",
-                }}/>
-                {!u && <span style={{fontFamily:F.mono, fontSize:"0.55rem", color:"#e74c3c"}}>{chg.toFixed(2)}%</span>}
-                <span style={{fontFamily:F.mono, fontSize:"0.58rem", fontWeight:600, color:C.text2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", width:"100%", textAlign:"center"}}>
-                  {item.id.replace("/MAD","")}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════
-   OVERVIEW — ROW 1: 6 KEY CARDS
-═══════════════════════════════════════════════════ */
-function OverviewCards({ data, indices, fx, crypto }) {
-  const keys = [
-    { id:"MASI",    src:indices,                        label:"Casablanca",  icon:"🇲🇦" },
-    { id:"USD/MAD", src:fx,                             label:"USD/MAD",     icon:"💵" },
-    { id:"BTC",     src:[...(data["LARGE CAP"]||[]),...crypto], label:"Bitcoin", icon:"₿" },
-    { id:"GOLD",    src:data["COMMODITIES"]||[],        label:"Gold",        icon:"🥇" },
-    { id:"BRENT",   src:data["COMMODITIES"]||[],        label:"Brent Oil",   icon:"🛢" },
-    { id:"US 10Y",  src:data["RATES / BONDS"]||[],      label:"US 10Y",      icon:"📊" },
-  ];
-  return (
-    <div style={{display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:8}}>
-      {keys.map(({id,src,label,icon}) => {
-        const item = src.find(x=>x.id===id) || src[0];
-        if (!item) return (
-          <div key={id} style={{background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 14px", minHeight:80, display:"flex", alignItems:"center", justifyContent:"center"}}>
-            <span style={{fontFamily:F.mono, fontSize:"0.6rem", color:C.text3}}>—</span>
-          </div>
-        );
-        const u = up(item.change);
-        return (
-          <div key={id} className="card-hover" style={{background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 14px", cursor:"pointer", transition:"all .15s"}}>
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6}}>
-              <span style={{fontFamily:F.mono, fontSize:"0.6rem", color:C.text3, letterSpacing:"0.1em"}}>{icon} {label}</span>
-              <Pill change={item.change} size="xs"/>
-            </div>
-            <div style={{fontFamily:F.mono, fontSize:"1.2rem", fontWeight:700, color:C.text, lineHeight:1}}>{fv(Number(item.value))}</div>
-            <div style={{marginTop:6, height:28}}><Spark series={item.series||[]} isUp={u} w={120} h={28}/></div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════
-   OVERVIEW — ROW 2: MULTI-ASSET CHART
-═══════════════════════════════════════════════════ */
-function OverviewChart({ data, indices, fx, crypto }) {
-  const [asset, setAsset] = useState("equities");
-  const switcher = [
-    {key:"equities",   label:"Equities"},
-    {key:"fx",         label:"FX"},
-    {key:"crypto",     label:"Crypto"},
-    {key:"commodities",label:"Commodities"},
-    {key:"rates",      label:"Rates"},
-  ];
-  const items = {
-    equities:    indices.slice(0,6),
-    fx:          fx.slice(0,6),
-    crypto:      (data["LARGE CAP"]||crypto).slice(0,6),
-    commodities: (data["COMMODITIES"]||[]).slice(0,6),
-    rates:       (data["RATES / BONDS"]||[]).slice(0,6),
-  }[asset] || [];
-
-  return (
-    <div style={{background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, overflow:"hidden"}}>
-      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 14px", borderBottom:`1px solid ${C.border}`}}>
-        <span style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.gold, letterSpacing:"0.12em"}}>MARKET OVERVIEW</span>
-        <div style={{display:"flex", gap:4}}>
-          {switcher.map(s => (
-            <button key={s.key} onClick={()=>setAsset(s.key)} style={{
-              fontFamily:F.mono, fontSize:"0.62rem", padding:"3px 10px", borderRadius:5, border:"none", cursor:"pointer",
-              background: asset===s.key ? C.gold : "transparent",
-              color: asset===s.key ? "#0f1117" : C.text3,
-              fontWeight: asset===s.key ? 600 : 400,
-            }}>{s.label}</button>
-          ))}
-        </div>
-      </div>
-      <div style={{display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:0}}>
-        {items.map((item, i) => {
-          const u = up(item.change);
-          return (
-            <div key={i} style={{padding:"12px 14px", borderRight: i<5 ? `1px solid ${C.border}` : "none"}}>
-              <div style={{fontFamily:F.mono, fontSize:"0.6rem", color:C.text3, marginBottom:4, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{item.id}</div>
-              <div style={{fontFamily:F.mono, fontSize:"0.95rem", fontWeight:700, color:C.text, marginBottom:2}}>{fv(Number(item.value))}</div>
-              <div style={{fontFamily:F.mono, fontSize:"0.62rem", color: u ? C.up : C.dn}}>{fc(item.change)}</div>
-              <div style={{marginTop:8, height:40}}><Spark series={item.series||[]} isUp={u} w={100} h={40}/></div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════
-   OVERVIEW — ROW 3: 4 COMPACT PANELS
-═══════════════════════════════════════════════════ */
-function PanelHeader({ title, sub }) {
-  return (
-    <div style={{padding:"8px 12px", borderBottom:`1px solid ${C.border}`, display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-      <span style={{fontFamily:F.mono, fontSize:"0.62rem", color:C.gold, letterSpacing:"0.1em"}}>{title}</span>
-      {sub && <span style={{fontFamily:F.mono, fontSize:"0.58rem", color:C.text3}}>{sub}</span>}
-    </div>
-  );
-}
-
-function MoroccoBreadth({ banks, telecom, industry }) {
-  const all = [...banks, ...telecom, ...industry];
-  const advances = all.filter(x => up(x.change)).length;
-  const declines = all.length - advances;
-  const pct = all.length ? Math.round(advances/all.length*100) : 50;
-  const topMovers = [...all].sort((a,b)=>Math.abs(Number(b.change))-Math.abs(Number(a.change))).slice(0,4);
-  return (
-    <div style={{background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, overflow:"hidden"}}>
-      <PanelHeader title="MOROCCO BREADTH" sub={`${all.length} stocks`}/>
-      <div style={{padding:"10px 12px"}}>
-        <div style={{display:"flex", justifyContent:"space-between", marginBottom:6}}>
-          <span style={{fontFamily:F.mono, fontSize:"0.62rem", color:C.up}}>▲ {advances} advancing</span>
-          <span style={{fontFamily:F.mono, fontSize:"0.62rem", color:C.dn}}>▼ {declines} declining</span>
-        </div>
-        <div style={{height:6, borderRadius:3, background:C.dn, overflow:"hidden", marginBottom:10}}>
-          <div style={{width:`${pct}%`, height:"100%", background:C.up, borderRadius:3}}/>
-        </div>
-        {topMovers.map((item,i) => (
-          <div key={i} style={{display:"flex", justifyContent:"space-between", padding:"3px 0", borderBottom:i<3?`1px solid ${C.border}`:"none"}}>
-            <span style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.text2}}>{item.id}</span>
-            <span style={{fontFamily:F.mono, fontSize:"0.65rem", color:up(item.change)?C.up:C.dn}}>{fc(item.change)}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function GlobalIndicesPanel({ indices, onSelect }) {
-  return (
-    <div style={{background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, overflow:"hidden"}}>
-      <PanelHeader title="GLOBAL INDICES"/>
-      <div style={{padding:"4px 0"}}>
-        {indices.slice(0,6).map((item,i) => (
-          <div key={i} onClick={()=>onSelect(item)} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"5px 12px", cursor:"pointer", borderBottom:`1px solid ${C.border}`}}>
-            <div>
-              <div style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.text}}>{item.id}</div>
-              <div style={{fontFamily:F.mono, fontSize:"0.58rem", color:C.text3}}>{item.name?.slice(0,18)}</div>
-            </div>
-            <div style={{textAlign:"right"}}>
-              <div style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.text}}>{fv(Number(item.value))}</div>
-              <div style={{fontFamily:F.mono, fontSize:"0.6rem", color:up(item.change)?C.up:C.dn}}>{fc(item.change)}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ForexMovers({ fx, onSelect }) {
-  const sorted = [...fx].sort((a,b)=>Math.abs(Number(b.change))-Math.abs(Number(a.change))).slice(0,6);
-  return (
-    <div style={{background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, overflow:"hidden"}}>
-      <PanelHeader title="FOREX MOVERS" sub="vs MAD"/>
-      <div style={{padding:"4px 0"}}>
-        {sorted.map((item,i) => {
-          const u = up(item.change);
-          return (
-            <div key={i} onClick={()=>onSelect(item)} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"5px 12px", cursor:"pointer", borderBottom:`1px solid ${C.border}`}}>
-              <div>
-                <div style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.text}}>{item.id}</div>
-                <div style={{height:20, width:60}}><Spark series={item.series||[]} isUp={u} w={60} h={20}/></div>
-              </div>
-              <div style={{textAlign:"right"}}>
-                <div style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.text}}>{fv(Number(item.value))}</div>
-                <div style={{fontFamily:F.mono, fontSize:"0.6rem", color:u?C.up:C.dn}}>{fc(item.change)}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function CryptoSnapshot({ crypto, data }) {
-  const items = (data["LARGE CAP"]||crypto).slice(0,6);
-  return (
-    <div style={{background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, overflow:"hidden"}}>
-      <PanelHeader title="CRYPTO SNAPSHOT"/>
-      <div style={{padding:"4px 0"}}>
-        {items.map((item,i) => {
-          const u = up(item.change);
-          return (
-            <div key={i} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"5px 12px", borderBottom:`1px solid ${C.border}`}}>
-              <div style={{display:"flex", alignItems:"center", gap:8}}>
-                <div style={{width:6, height:6, borderRadius:"50%", background:u?C.up:C.dn, flexShrink:0}}/>
-                <span style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.text}}>{item.id}</span>
-              </div>
-              <div style={{textAlign:"right"}}>
-                <div style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.text}}>{fv(Number(item.value))}</div>
-                <div style={{fontFamily:F.mono, fontSize:"0.6rem", color:u?C.up:C.dn}}>{fc(item.change)}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════
-   CATEGORY PAGES — KPI STRIP (compact, replaces SummaryCards)
-═══════════════════════════════════════════════════ */
-function KpiStrip({ data, tab }) {
-  const fx          = data["FX / MAD"]             || [];
-  const indices     = data["GLOBAL INDICES"]        || [];
-  const crypto      = data["LARGE CAP"] || data["CRYPTO"] || [];
-  const commodities = data["COMMODITIES"]           || [];
-  const bonds       = data["RATES / BONDS"]         || [];
-  const banks       = data["BANKS"]                 || [];
-
-  const sets = {
-    morocco:    [...banks.slice(0,3), indices.find(x=>x.id==="MASI")].filter(Boolean),
-    indices:    indices.slice(0,4),
-    usa:        (data["USA STOCKS"]||[]).slice(0,4),
-    europe:     (data["EUROPE STOCKS"]||[]).slice(0,4),
-    gcc:        (data["GCC STOCKS"]||[]).slice(0,4),
-    asia:       (data["ASIA STOCKS"]||[]).slice(0,4),
-    currencies: fx.slice(0,4),
-    crypto:     crypto.slice(0,4),
-    commodities:commodities.slice(0,4),
-    bonds:      bonds.slice(0,4),
-  };
-  const items = sets[tab] || [];
-  if (!items.length) return null;
-  return (
-    <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8}}>
-      {items.map((item,i) => {
-        const u = up(item.change);
-        return (
-          <div key={i} style={{background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"8px 12px", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-            <div>
-              <div style={{fontFamily:F.mono, fontSize:"0.58rem", color:C.text3, marginBottom:2}}>{item.id}</div>
-              <div style={{fontFamily:F.mono, fontSize:"0.9rem", fontWeight:700, color:C.text}}>{fv(Number(item.value))}</div>
-            </div>
-            <Pill change={item.change} size="xs"/>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════
-   BONDS PAGE
-═══════════════════════════════════════════════════ */
-function BondsPanel({ data }) {
-  const bonds = data["RATES / BONDS"] || data["US / AMERICAS"] || [];
-  const KEY_BONDS = ["US 2Y","US 10Y","US 30Y","Germany 10Y","Japan 10Y","UK 10Y","France 10Y","Morocco 10Y"];
-  const items = KEY_BONDS.map(id => bonds.find(x=>x.id===id)).filter(Boolean);
-  const rest  = bonds.filter(x => !KEY_BONDS.includes(x.id));
-  const spread = (() => {
-    const y10 = bonds.find(x=>x.id==="US 10Y");
-    const y2  = bonds.find(x=>x.id==="US 2Y");
-    if (!y10 || !y2) return null;
-    return (Number(y10.value) - Number(y2.value)).toFixed(2);
-  })();
-
-  return (
-    <div style={{display:"flex", flexDirection:"column", gap:10}}>
-      {spread !== null && (
-        <div style={{background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"10px 14px", display:"flex", alignItems:"center", gap:20}}>
-          <div>
-            <div style={{fontFamily:F.mono, fontSize:"0.6rem", color:C.text3, marginBottom:2}}>10Y–2Y SPREAD</div>
-            <div style={{fontFamily:F.mono, fontSize:"1.4rem", fontWeight:700, color: Number(spread)>=0?C.up:C.dn}}>{spread > 0 ? "+" : ""}{spread}%</div>
-          </div>
-          <div style={{fontFamily:F.sans, fontSize:"0.72rem", color:C.text2}}>
-            {Number(spread) >= 0 ? "Normal yield curve — growth expected" : "Inverted yield curve — recession signal"}
-          </div>
-        </div>
-      )}
-      <StockTable items={[...items, ...rest]} activeId={null} onSelect={()=>{}}/>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════
-   COMMODITIES PAGE
-═══════════════════════════════════════════════════ */
-function CommoditiesPanel({ data }) {
-  const items = data["COMMODITIES"] || [];
-  const ORDER = ["GOLD","SILVER","BRENT","WTI","NGAS","COPPER","PLATINUM","PALLADIUM","WHEAT","CORN"];
-  const sorted = [
-    ...ORDER.map(id => items.find(x=>x.id===id)).filter(Boolean),
-    ...items.filter(x=>!ORDER.includes(x.id)),
-  ];
-  return (
-    <div style={{display:"flex", flexDirection:"column", gap:10}}>
-      <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8}}>
-        {sorted.slice(0,6).map((item,i) => {
-          const u = up(item.change);
-          return (
-            <div key={i} style={{background: u?"rgba(0,120,60,.12)":"rgba(140,20,20,.12)", border:`1px solid ${u?"rgba(52,199,89,.2)":"rgba(255,59,48,.2)"}`, borderRadius:10, padding:"12px 14px"}}>
-              <div style={{fontFamily:F.mono, fontSize:"0.62rem", color:C.text3, marginBottom:4}}>{item.id}</div>
-              <div style={{fontFamily:F.mono, fontSize:"1.1rem", fontWeight:700, color:C.text, marginBottom:2}}>{fv(Number(item.value))}</div>
-              <div style={{fontFamily:F.mono, fontSize:"0.65rem", color:u?C.up:C.dn}}>{fc(item.change)}</div>
-              <div style={{marginTop:8, height:32}}><Spark series={item.series||[]} isUp={u} w={120} h={32}/></div>
-            </div>
-          );
-        })}
-      </div>
-      {sorted.length > 6 && <StockTable items={sorted.slice(6)} activeId={null} onSelect={()=>{}}/>}
-    </div>
-  );
-}
-
 function Heatmap({ data }) {
   const items = useMemo(()=>{
     const arr=[];
@@ -1618,25 +1096,11 @@ export default function App() {
   const indices     = data["GLOBAL INDICES"]        || [];
   const featured    = data["FEATURED MARKET BOXES"] || [];
 
-  const TICKER_IDS = ["MASI","DOW","SPX","NASDAQ","USD/MAD","EUR/MAD","BTC","GOLD","BRENT","US 10Y"];
-  const tickerItems = useMemo(() => {
-    const all = [...indices, ...fx, ...crypto, ...(data["COMMODITIES"]||[]), ...(data["RATES / BONDS"]||[])];
-    return TICKER_IDS.map(id => all.find(x => x.id === id)).filter(Boolean);
-  }, [indices, fx, crypto, data]);
+  const tickerItems = useMemo(()=>[...fx.slice(0,3),...crypto.slice(0,2),...indices.slice(0,2),...banks.slice(0,2)].filter(i=>i?.id),[fx,crypto,indices,banks]);
 
-  const heroItem = useMemo(()=>{
-    if(tab==="overview"||tab==="morocco") return indices.find(x=>x.id==="MASI")||banks[0]||null;
-    if(tab==="currencies") return fx[0]||null;
-    if(tab==="crypto")     return (data["CRYPTO"]||data["LARGE CAP"]||[])[0]||null;
-    if(tab==="commodities")return (data["COMMODITIES"]||[])[0]||null;
-    if(tab==="bonds")      return (data["RATES / BONDS"]||[])[0]||null;
-    if(tab==="indices")    return indices[0]||null;
-    if(tab==="usa")        return (data["USA STOCKS"]||[])[0]||null;
-    if(tab==="europe")     return (data["EUROPE STOCKS"]||[])[0]||null;
-    if(tab==="gcc")        return (data["GCC STOCKS"]||[])[0]||null;
-    if(tab==="asia")       return (data["ASIA STOCKS"]||[])[0]||null;
-    return null;
-  },[tab,indices,banks,fx,data]);
+  const heroItem = useMemo(()=>
+    indices.find(x=>x.id==="MASI")||featured[0]||fx[0]||crypto[0]||banks[0]
+  ,[indices,featured,fx,crypto,banks]);
 
   /* All main items for the table, optionally filtered by sector */
   const allItems = useMemo(()=>{
@@ -1662,129 +1126,137 @@ export default function App() {
   const sideItems = useMemo(()=>[...banks,...telecom,...industry].filter(i=>i?.id),[banks,telecom,industry]);
   const rightItems = useMemo(()=>[...fx,...crypto.slice(0,3)].filter(i=>i?.id),[fx,crypto]);
 
-  /* ── per-tab sidebar content ── */
-  const LeftSidebar = () => {
-    if (tab === "morocco")    return <><Watchlist title="Actions Maroc" items={[...banks,...telecom,...industry]} activeId={selectedItem?.id} onSelect={setSelectedItem}/><SectorPills data={data} activeSector={activeSector} onSector={setActiveSector}/></>;
-    if (tab === "indices")    return <Watchlist title="Major Indices" items={indices.slice(0,15)} activeId={selectedItem?.id} onSelect={setSelectedItem}/>;
-    if (tab === "usa")        return <Watchlist title="🇺🇸 US Mega Cap" items={(data["USA STOCKS"]||[]).slice(0,15)} activeId={selectedItem?.id} onSelect={setSelectedItem}/>;
-    if (tab === "europe")     return <Watchlist title="🇪🇺 Europe Top" items={(data["EUROPE STOCKS"]||[]).slice(0,15)} activeId={selectedItem?.id} onSelect={setSelectedItem}/>;
-    if (tab === "gcc")        return <Watchlist title="🌙 GCC Markets" items={(data["GCC STOCKS"]||[]).slice(0,15)} activeId={selectedItem?.id} onSelect={setSelectedItem}/>;
-    if (tab === "asia")       return <Watchlist title="🌏 Asia Top" items={(data["ASIA STOCKS"]||[]).slice(0,15)} activeId={selectedItem?.id} onSelect={setSelectedItem}/>;
-    if (tab === "currencies") return <Watchlist title="MAD Pairs" items={fx.filter(x=>x.id?.includes("/MAD")).slice(0,12)} activeId={selectedItem?.id} onSelect={setSelectedItem}/>;
-    if (tab === "crypto")     return <Watchlist title="Top Crypto" items={(data["LARGE CAP"]||crypto).slice(0,12)} activeId={selectedItem?.id} onSelect={setSelectedItem}/>;
-    if (tab === "commodities")return <Watchlist title="Commodities" items={(data["COMMODITIES"]||[]).slice(0,12)} activeId={selectedItem?.id} onSelect={setSelectedItem}/>;
-    if (tab === "bonds")      return <Watchlist title="Bond Yields" items={(data["RATES / BONDS"]||bonds).slice(0,12)} activeId={selectedItem?.id} onSelect={setSelectedItem}/>;
-    return <><Watchlist title="Casablanca" items={[...banks,...telecom,...industry].slice(0,10)} activeId={selectedItem?.id} onSelect={setSelectedItem}/><Watchlist title="Indices" items={indices.slice(0,8)} activeId={null} onSelect={setSelectedItem}/></>;
-  };
-
-  const RightSidebar = () => (
-    <>
-      {selectedItem && <DetailCard item={selectedItem} onClose={()=>setSelectedItem(null)}/>}
-      {!selectedItem && tab === "currencies" && <Watchlist title="Majors" items={fx.filter(x=>!x.id?.includes("MAD")).slice(0,8)} activeId={null} onSelect={setSelectedItem}/>}
-      {!selectedItem && tab === "crypto"     && <Watchlist title="DeFi / L2" items={(data["DEFI / LAYER2"]||[]).slice(0,8)} activeId={null} onSelect={setSelectedItem}/>}
-      {!selectedItem && tab === "bonds"      && <Watchlist title="Spreads" items={(data["RATES / BONDS"]||[]).slice(0,8)} activeId={null} onSelect={setSelectedItem}/>}
-      {!selectedItem && !["currencies","crypto","bonds"].includes(tab) && <Watchlist title="Forex" items={fx.slice(0,6)} activeId={null} onSelect={setSelectedItem}/>}
-      <NewsPanel/>
-      <CalPanel/>
-    </>
-  );
-
   return (
-    <div style={{background:C.bg, color:C.text, minHeight:"100vh", fontFamily:F.sans}}>
+    <div style={{background:C.bg,color:C.text,minHeight:"100vh",fontFamily:F.sans}}>
       <style>{GLOBAL_CSS}</style>
 
-      {/* Zellige band */}
-      <div style={{height:5, background:"linear-gradient(90deg,#1a3a8c,#4ab8a0,#f0c040,#d4900a,#2a7a3a,#4ab8a0,#1a3a8c)", position:"sticky", top:0, zIndex:700}}/>
+      {/* Gold zellige-style header band */}
+      <div style={{
+        height:6,
+        background:"linear-gradient(90deg,#1a3a8c,#4ab8a0,#f0c040,#d4900a,#2a7a3a,#4ab8a0,#1a3a8c)",
+        position:"sticky",top:0,zIndex:700,
+      }}/>
 
       {/* Ticker */}
       <Ticker items={tickerItems}/>
 
-      {/* World Clock */}
+      {/* World Clock - above tabs */}
       <WorldClock/>
 
       {/* Navbar */}
-      <Navbar activeTab={tab} onTab={t=>{setTab(t);setSelectedItem(null);setActiveSector(null);}} updatedAt={updatedAt}/>
+      <Navbar activeTab={tab} onTab={setTab} updatedAt={updatedAt}/>
 
-      {/* Error */}
-      {error && <div style={{padding:"8px 20px", background:"rgba(255,59,48,.08)", borderBottom:`1px solid rgba(255,59,48,.2)`, fontFamily:F.mono, fontSize:"0.65rem", color:C.dn}}>⚠ {error}</div>}
+      {/* Index strip */}
+      {!loading && !error && (featured.length||fx.length) && (
+        <IndexStrip featured={featured} fx={fx}/>
+      )}
+
+      {/* Error banner */}
+      {error && (
+        <div style={{
+          padding:"12px 20px",
+          background:"rgba(255,59,48,0.08)",borderBottom:"1px solid rgba(255,59,48,0.2)",
+          fontFamily:F.mono,fontSize:"0.68rem",color:C.dn,
+        }}>
+          ⚠ {error} — vérifiez <code style={{color:C.gold}}>/api/market?tab={tab}</code>
+        </div>
+      )}
 
       {/* Body */}
-      {loading ? <Loader/> : tab === "overview" ? (
+      {loading ? <Loader/> : (
+        <div style={{
+          display:"grid",
+          gridTemplateColumns:"220px 1fr 230px",
+          gap:0,
+          minHeight:"calc(100vh - 120px)",
+        }}>
 
-        /* ══════════════════════════════════════════
-           OVERVIEW — dedicated layout
-        ══════════════════════════════════════════ */
-        <div style={{padding:"14px 20px", display:"flex", flexDirection:"column", gap:12}}>
-
-          {/* Row 1 — 6 key cards */}
-          <OverviewCards data={data} indices={indices} fx={fx} crypto={crypto}/>
-
-          {/* Row 2 — multi-asset chart with switcher */}
-          <OverviewChart data={data} indices={indices} fx={fx} crypto={crypto}/>
-
-          {/* Row 3 — 4 compact panels */}
-          <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10}}>
-            <MoroccoBreadth banks={banks} telecom={telecom} industry={industry}/>
-            <GlobalIndicesPanel indices={indices} onSelect={setSelectedItem}/>
-            <ForexMovers fx={fx} onSelect={setSelectedItem}/>
-            <CryptoSnapshot crypto={crypto} data={data}/>
-          </div>
-
-          {/* Row 4 — news + calendar + heatmap */}
-          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10}}>
-            <NewsPanel/>
-            <CalPanel/>
-            <FearGreedCard data={data}/>
-          </div>
-          <Heatmap data={data}/>
-        </div>
-
-      ) : (
-
-        /* ══════════════════════════════════════════
-           CATEGORY PAGES — 3-column layout
-        ══════════════════════════════════════════ */
-        <div style={{display:"grid", gridTemplateColumns:"200px 1fr 210px", minHeight:"calc(100vh - 150px)"}}>
-
-          {/* Left sidebar — tab-specific */}
-          <aside style={{padding:"12px 10px", borderRight:`1px solid ${C.border}`, overflowY:"auto", maxHeight:"calc(100vh - 150px)", display:"flex", flexDirection:"column", gap:10, position:"sticky", top:150, alignSelf:"start"}}>
-            <LeftSidebar/>
+          {/* ── LEFT SIDEBAR ── */}
+          <aside style={{
+            padding:"14px 12px",
+            borderRight:`1px solid ${C.border}`,
+            overflowY:"auto",
+            maxHeight:"calc(100vh - 120px)",
+            display:"flex",flexDirection:"column",gap:12,
+          }}>
+            <Watchlist title="Actions Maroc" items={sideItems} activeId={selectedItem?.id} onSelect={setSelectedItem}/>
+            {indices.length>0 && <Watchlist title="Indices Mondiaux" items={indices} activeId={selectedItem?.id} onSelect={setSelectedItem}/>}
           </aside>
 
-          {/* Main content */}
-          <main style={{padding:"12px 14px", display:"flex", flexDirection:"column", gap:10, minWidth:0}}>
+          {/* ── MAIN ── */}
+          <main style={{
+            padding:"14px 16px",
+            overflowY:"auto",
+            maxHeight:"calc(100vh - 120px)",
+            display:"flex",flexDirection:"column",gap:14,
+          }}>
+            {/* Summary cards */}
+            <SummaryCards data={data}/>
 
-            {/* KPI strip — compact */}
-            <KpiStrip data={data} tab={tab}/>
-
-            {/* Hero chart — reduced height */}
+            {/* Hero chart */}
             {heroItem && <div className="fade-up"><ChartHero item={heroItem} label={tabLabel}/></div>}
 
-            {/* Main content per tab */}
-            {tab === "crypto"     && <CryptoGrid data={data}/>}
-            {tab === "currencies" && <FXCardGrid items={fx}/>}
-            {tab === "bonds"      && <BondsPanel data={data}/>}
-            {tab === "commodities"&& <CommoditiesPanel data={data}/>}
-            {!["crypto","currencies","bonds","commodities"].includes(tab) && allItems.length > 0 && (
-              <div className="fade-up"><StockTable items={allItems} activeId={selectedItem?.id} onSelect={setSelectedItem}/></div>
+            {/* Sector filter */}
+            {["overview","morocco"].includes(tab) && allItems.length>0 && (
+              <div className="fade-up">
+                <SectorPills data={data} activeSector={activeSector} onSector={setActiveSector}/>
+              </div>
             )}
 
-            {/* Morocco extras */}
-            {tab === "morocco" && <><FearGreedCard data={data}/><Heatmap data={data}/></>}
+            {/* Main table */}
+            {allItems.length>0 && (
+              <div className="fade-up">
+                <StockTable items={allItems} activeId={selectedItem?.id} onSelect={setSelectedItem}/>
+              </div>
+            )}
+
+            {/* Heatmap */}
+            {["overview","morocco"].includes(tab) && (
+              <div className="fade-up"><FearGreedCard data={data}/></div>
+            )}
+            {["overview","morocco"].includes(tab) && (
+              <div className="fade-up"><Heatmap data={data}/></div>
+            )}
           </main>
 
-          {/* Right sidebar */}
-          <aside style={{padding:"12px 10px", borderLeft:`1px solid ${C.border}`, overflowY:"auto", maxHeight:"calc(100vh - 150px)", display:"flex", flexDirection:"column", gap:10, position:"sticky", top:150, alignSelf:"start"}}>
-            <RightSidebar/>
+          {/* ── RIGHT SIDEBAR ── */}
+          <aside style={{
+            padding:"14px 12px",
+            borderLeft:`1px solid ${C.border}`,
+            overflowY:"auto",
+            maxHeight:"calc(100vh - 120px)",
+            display:"flex",flexDirection:"column",gap:12,
+          }}>
+            {/* Detail card (shown when row is clicked) */}
+            {selectedItem && (
+              <DetailCard item={selectedItem} onClose={()=>setSelectedItem(null)}/>
+            )}
+
+            {/* Forex quick */}
+            {!selectedItem && rightItems.length>0 && (
+              <Watchlist title="Forex & Crypto" items={rightItems} activeId={null} onSelect={setSelectedItem}/>
+            )}
+
+            <NewsPanel/>
+            <CalPanel/>
           </aside>
         </div>
       )}
 
       {/* Footer */}
-      <footer style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 20px", background:C.surface, borderTop:`1px solid ${C.border}`, fontFamily:F.mono, fontSize:"0.55rem", color:C.text3}}>
-        <span><span style={{color:C.up}}>●</span> Morocco-first market dashboard · Données indicatives</span>
-        <span>{updatedAt ? "Updated: "+updatedAt : "—"}</span>
-        <span>EODHD · Drahmi API · © 2026</span>
+      <footer style={{
+        display:"flex",justifyContent:"space-between",alignItems:"center",
+        padding:"10px 20px",
+        background:C.surface,
+        borderTop:`1px solid ${C.border}`,
+        fontFamily:F.mono,fontSize:"0.55rem",color:C.text3,
+      }}>
+        <span style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{color:C.up}}>●</span>
+          Drahmi · Bourse de Casablanca · Données indicatives
+        </span>
+        <span>{updatedAt?"Actualisé: "+updatedAt:"—"}</span>
+        <span>Sources: EODHD · Drahmi API · © 2026</span>
       </footer>
     </div>
   );
