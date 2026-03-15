@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[functions]
+  directory = "netlify/functions"
+
+# Rewrite /api/market → /.netlify/functions/market
+# so App.jsx fetch("/api/market?tab=...") still works unchanged
+[[redirects]]
+  from = "/api/market"
+  to   = "/.netlify/functions/market"
+  status = 200
