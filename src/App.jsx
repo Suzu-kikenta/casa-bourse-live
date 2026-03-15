@@ -983,6 +983,220 @@ function FearGreedCard({ data }) {
   );
 }
 
+/* ═══════════════════════════════════════════════════
+   CRYPTO GRID  (Bloomberg-style price cards)
+═══════════════════════════════════════════════════ */
+function CryptoGrid({ data }) {
+  const allCrypto = useMemo(() => {
+    const keys = ["LARGE CAP","CRYPTO","DEFI / LAYER2","MEME / TRENDING","LAYER1 / INFRA","STABLECOINS"];
+    const arr = [];
+    keys.forEach(k => { if(data[k]) arr.push(...data[k]); });
+    return arr.filter(i => i?.id);
+  }, [data]);
+
+  if (!allCrypto.length) return null;
+
+  // Relative performance bar chart data
+  const sorted = [...allCrypto].sort((a,b) => Number(b.change)-Number(a.change));
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+      {/* Grid of cards */}
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:"repeat(auto-fill, minmax(160px, 1fr))",
+        gap:2,
+        background:C.border,
+        border:`1px solid ${C.border}`,
+        borderRadius:10,
+        overflow:"hidden",
+      }}>
+        {allCrypto.map((item, i) => {
+          const u = Number(item.change||0) >= 0;
+          const bg = u ? "rgba(0,200,83,.13)" : "rgba(255,59,48,.12)";
+          const series = item.series || [];
+          const hi = series.length ? Math.max(...series) : null;
+          const lo = series.length ? Math.min(...series) : null;
+          return (
+            <div key={i} style={{
+              background: u ? "rgba(0,200,83,.07)" : "rgba(255,59,48,.07)",
+              padding:"10px 10px 8px",
+              display:"flex", flexDirection:"column", gap:4,
+              cursor:"pointer", transition:"filter .15s",
+            }}
+            onMouseEnter={e=>e.currentTarget.style.filter="brightness(1.3)"}
+            onMouseLeave={e=>e.currentTarget.style.filter=""}>
+              {/* Top row: symbol + change */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div style={{display:"flex",alignItems:"center",gap:5}}>
+                  <div style={{
+                    width:18,height:18,borderRadius:4,flexShrink:0,
+                    background:u?"rgba(0,200,83,.3)":"rgba(255,59,48,.3)",
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:9,fontWeight:700,color:u?"#00c853":"#ff3b30",
+                    fontFamily:F.mono,
+                  }}>{(item.symbol||item.id||"").slice(0,2)}</div>
+                  <span style={{fontFamily:F.mono,fontSize:"0.62rem",fontWeight:700,color:C.text2,letterSpacing:"0.04em"}}>{item.id}</span>
+                </div>
+                <span style={{fontFamily:F.mono,fontSize:"0.6rem",fontWeight:600,color:u?"#00c853":"#ff3b30"}}>
+                  {u?"+":""}{Number(item.change||0).toFixed(2)}%
+                </span>
+              </div>
+
+              {/* Price */}
+              <div style={{fontFamily:F.mono,fontSize:"1.05rem",fontWeight:700,color:C.text,letterSpacing:"-0.01em",lineHeight:1}}>
+                {Number(item.value).toLocaleString("fr-FR",{maximumFractionDigits:Number(item.value)>100?2:Number(item.value)>1?4:6})}
+              </div>
+
+              {/* Sparkline */}
+              <div style={{height:36,margin:"2px 0"}}>
+                <Spark series={series} up={u} w={160} h={36}/>
+              </div>
+
+              {/* Hi/Lo */}
+              {hi !== null && (
+                <div style={{display:"flex",justifyContent:"space-between",fontFamily:F.mono,fontSize:"0.52rem",color:C.text3}}>
+                  <span>H {Number(hi).toLocaleString("fr-FR",{maximumFractionDigits:hi>100?2:hi>1?3:6})}</span>
+                  <span>L {Number(lo).toLocaleString("fr-FR",{maximumFractionDigits:lo>100?2:lo>1?3:6})}</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Relative performance bar chart */}
+      <div style={{
+        background:C.surface, border:`1px solid ${C.border}`,
+        borderRadius:10, padding:"14px 16px",
+      }}>
+        <div style={{fontFamily:F.mono,fontSize:"0.6rem",color:C.text3,letterSpacing:"0.12em",marginBottom:12,textAlign:"center"}}>
+          1 DAY RELATIVE PERFORMANCE [USD]
+        </div>
+        <div style={{display:"flex",alignItems:"flex-end",gap:2,height:80,overflowX:"auto"}}>
+          {sorted.map((item,i) => {
+            const pct = Number(item.change||0);
+            const u = pct >= 0;
+            const maxPct = Math.max(...sorted.map(x=>Math.abs(Number(x.change||0))),1);
+            const barH = Math.abs(pct)/maxPct * 70;
+            return (
+              <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,flexShrink:0,minWidth:28}}>
+                {u && <div style={{fontFamily:F.mono,fontSize:"0.45rem",color:"#00c853",marginBottom:1}}>{pct.toFixed(2)}%</div>}
+                <div style={{
+                  width:20, height:barH||2, borderRadius:2,
+                  background: u ? "rgba(0,200,83,.7)" : "rgba(255,59,48,.7)",
+                  alignSelf: u ? "flex-end" : "flex-start",
+                  marginTop: u ? "auto" : 0,
+                }}/>
+                {!u && <div style={{fontFamily:F.mono,fontSize:"0.45rem",color:"#ff3b30",marginTop:1}}>{pct.toFixed(2)}%</div>}
+                <div style={{fontFamily:F.mono,fontSize:"0.48rem",color:C.text3,transform:"rotate(-45deg)",transformOrigin:"top left",marginTop:4,whiteSpace:"nowrap"}}>{item.id}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   FX CARD GRID  (like the reference screenshot)
+═══════════════════════════════════════════════════ */
+function FXCardGrid({ items }) {
+  if (!items?.length) return null;
+  return (
+    <div>
+      {/* Price cards grid */}
+      <div style={{
+        display:"grid",
+        gridTemplateColumns:"repeat(auto-fill, minmax(220px, 1fr))",
+        gap:3, marginBottom:16,
+      }}>
+        {items.map((item, i) => {
+          const u = Number(item.change||0) >= 0;
+          const bg = u ? "rgba(0,120,60,.85)" : "rgba(140,20,20,.85)";
+          const hi = item.series?.length ? Math.max(...item.series) : null;
+          const lo = item.series?.length ? Math.min(...item.series) : null;
+          return (
+            <div key={i} style={{
+              background: bg,
+              borderRadius:8, padding:"10px 12px",
+              position:"relative", overflow:"hidden",
+              minHeight:100,
+            }}>
+              {/* Header row */}
+              <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:4}}>
+                <span style={{fontFamily:F.mono, fontSize:"0.72rem", fontWeight:700, color:"rgba(255,255,255,.9)", letterSpacing:"0.06em"}}>
+                  {item.id}
+                </span>
+                <div style={{textAlign:"right"}}>
+                  <span style={{fontFamily:F.mono, fontSize:"0.65rem", color:"rgba(255,255,255,.8)"}}>
+                    {Number(item.change||0) >= 0 ? "+" : ""}{Number(item.change||0).toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+              {/* Price */}
+              <div style={{fontFamily:F.mono, fontSize:"1.5rem", fontWeight:700, color:"#fff", letterSpacing:"-0.01em", lineHeight:1, marginBottom:6}}>
+                {Number(item.value||0).toLocaleString("fr-FR", {minimumFractionDigits:3, maximumFractionDigits:4})}
+              </div>
+              {/* H/L */}
+              {hi !== null && (
+                <div style={{display:"flex", gap:8, marginBottom:6}}>
+                  <span style={{fontFamily:F.mono, fontSize:"0.58rem", color:"rgba(255,255,255,.7)"}}>
+                    H {Number(hi).toFixed(4)}
+                  </span>
+                  <span style={{fontFamily:F.mono, fontSize:"0.58rem", color:"rgba(255,255,255,.7)"}}>
+                    L {Number(lo).toFixed(4)}
+                  </span>
+                </div>
+              )}
+              {/* Sparkline */}
+              {item.series?.length > 1 && (
+                <div style={{height:36, marginTop:4}}>
+                  <Spark series={item.series} up={u} w={200} h={36}/>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {/* Performance bar chart */}
+      <div style={{
+        background:C.surface, border:`1px solid ${C.border}`,
+        borderRadius:12, padding:"16px",
+      }}>
+        <div style={{fontFamily:F.mono, fontSize:"0.65rem", color:C.gold, letterSpacing:"0.14em", textAlign:"center", marginBottom:16}}>
+          1 DAY RELATIVE PERFORMANCE / MAD
+        </div>
+        <div style={{display:"flex", alignItems:"flex-end", justifyContent:"center", gap:6, height:120}}>
+          {items.slice(0,10).map((item, i) => {
+            const chg = Number(item.change||0);
+            const maxAbs = Math.max(...items.slice(0,10).map(x => Math.abs(Number(x.change||0))), 0.01);
+            const barH = Math.abs(chg) / maxAbs * 80;
+            const u = chg >= 0;
+            return (
+              <div key={i} style={{display:"flex", flexDirection:"column", alignItems:"center", gap:4, flex:1, minWidth:0}}>
+                {u && <span style={{fontFamily:F.mono, fontSize:"0.55rem", color:"#2ecc71"}}>{chg > 0 ? "+" : ""}{chg.toFixed(2)}%</span>}
+                <div style={{
+                  width:"100%", height:barH,
+                  background: u ? "rgba(46,204,113,.7)" : "rgba(231,76,60,.7)",
+                  borderRadius:u ? "3px 3px 0 0" : "0 0 3px 3px",
+                  marginTop: u ? 0 : "auto",
+                  alignSelf: u ? "flex-end" : "flex-start",
+                }}/>
+                {!u && <span style={{fontFamily:F.mono, fontSize:"0.55rem", color:"#e74c3c"}}>{chg.toFixed(2)}%</span>}
+                <span style={{fontFamily:F.mono, fontSize:"0.58rem", fontWeight:600, color:C.text2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", width:"100%", textAlign:"center"}}>
+                  {item.id.replace("/MAD","")}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Heatmap({ data }) {
   const items = useMemo(()=>{
     const arr=[];
@@ -1098,9 +1312,19 @@ export default function App() {
 
   const tickerItems = useMemo(()=>[...fx.slice(0,3),...crypto.slice(0,2),...indices.slice(0,2),...banks.slice(0,2)].filter(i=>i?.id),[fx,crypto,indices,banks]);
 
-  const heroItem = useMemo(()=>
-    indices.find(x=>x.id==="MASI")||featured[0]||fx[0]||crypto[0]||banks[0]
-  ,[indices,featured,fx,crypto,banks]);
+  const heroItem = useMemo(()=>{
+    if(tab==="overview"||tab==="morocco") return indices.find(x=>x.id==="MASI")||banks[0]||null;
+    if(tab==="currencies") return fx[0]||null;
+    if(tab==="crypto")     return (data["CRYPTO"]||data["LARGE CAP"]||[])[0]||null;
+    if(tab==="commodities")return (data["COMMODITIES"]||[])[0]||null;
+    if(tab==="bonds")      return (data["RATES / BONDS"]||[])[0]||null;
+    if(tab==="indices")    return indices[0]||null;
+    if(tab==="usa")        return (data["USA STOCKS"]||[])[0]||null;
+    if(tab==="europe")     return (data["EUROPE STOCKS"]||[])[0]||null;
+    if(tab==="gcc")        return (data["GCC STOCKS"]||[])[0]||null;
+    if(tab==="asia")       return (data["ASIA STOCKS"]||[])[0]||null;
+    return null;
+  },[tab,indices,banks,fx,data]);
 
   /* All main items for the table, optionally filtered by sector */
   const allItems = useMemo(()=>{
@@ -1147,7 +1371,7 @@ export default function App() {
       <Navbar activeTab={tab} onTab={setTab} updatedAt={updatedAt}/>
 
       {/* Index strip */}
-      {!loading && !error && (featured.length||fx.length) && (
+      {!loading && !error && ["overview","morocco"].includes(tab) && (featured.length||fx.length) && (
         <IndexStrip featured={featured} fx={fx}/>
       )}
 
@@ -1193,8 +1417,8 @@ export default function App() {
             {/* Summary cards */}
             <SummaryCards data={data}/>
 
-            {/* Hero chart */}
-            {heroItem && <div className="fade-up"><ChartHero item={heroItem} label={tabLabel}/></div>}
+            {/* Hero chart - not on crypto tab */}
+            {heroItem && !["crypto","currencies"].includes(tab) && <div className="fade-up"><ChartHero item={heroItem} label={tabLabel}/></div>}
 
             {/* Sector filter */}
             {["overview","morocco"].includes(tab) && allItems.length>0 && (
@@ -1203,8 +1427,12 @@ export default function App() {
               </div>
             )}
 
-            {/* Main table */}
-            {allItems.length>0 && (
+            {/* Main table or Crypto Grid or FX Grid */}
+            {tab === "crypto" ? (
+              <div className="fade-up"><CryptoGrid data={data}/></div>
+            ) : tab === "currencies" ? (
+              <div className="fade-up"><FXCardGrid items={fx}/></div>
+            ) : allItems.length>0 && (
               <div className="fade-up">
                 <StockTable items={allItems} activeId={selectedItem?.id} onSelect={setSelectedItem}/>
               </div>
